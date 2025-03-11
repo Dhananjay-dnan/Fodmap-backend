@@ -10,7 +10,6 @@ import com.foodmap.foodmap_backend.domain.entities.User;
 @Repository
 public interface UserRepository extends JpaRepository< User, String> {
     Optional<User> findByUsername(String username);
-
     Optional<User> findById(Long userId);
     Boolean existsByUsername(String username);
     Optional<User> findByEmail(String email);;

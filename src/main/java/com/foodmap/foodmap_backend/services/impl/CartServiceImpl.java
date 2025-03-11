@@ -57,8 +57,19 @@ public class CartServiceImpl implements CartService{
     @Transactional
     public Cart addItemToCart(Long userId, Long foodListId) {
         Cart cart = getCartByUserId(userId);
+        CartItem firsItem=null;
         FoodList menuItem = foodListRepository.findById(foodListId)
             .orElseThrow(() -> new RuntimeException("Menu item not found"));
+            //menuItem.getRestaurant().getId();
+            if(!cart.getItems().isEmpty())
+              firsItem=cart.getItems().stream().findFirst().orElse(null);
+
+            FoodList menuItemEx = foodListRepository.findById(firsItem.getId())
+            .orElseThrow(() -> new RuntimeException("Menu item not found"));
+
+            if(menuItemEx.getRestaurant().getId()!=menuItem.getRestaurant().getId());
+                    clearCart(userId);
+            System.out.println(menuItemEx.getRestaurant().getId() + " " + menuItem.getRestaurant().getId());
         CartItem cartItem = cart.getItems().stream()
             .filter(item -> item.getFoodList().getId().equals(foodListId))
             .findFirst()
@@ -122,6 +133,20 @@ public class CartServiceImpl implements CartService{
     @Override
     public Map<String, String> addToCart(String userId, String foodId) {
         String key = "cart:" + userId;
+        Long fID= redisTemplate.opsForHash().keys("cart:" + userId).stream()
+        .map(keyCart -> Long.parseLong((String) keyCart))
+        .findFirst()
+        .orElse(null);
+        System.out.println("iohohhhhhhjhbhguyfvgtyhvtdrxersdfgvbhnjmkhygtfrdeswasedrftgyhujkjhgftrd--------"+fID);
+        if(fID!=null){
+        FoodList menuItem = foodListRepository.findById(fID)
+            .orElseThrow(() -> new RuntimeException("Menu item not found"));
+            FoodList menuItem1 = foodListRepository.findById(Long.parseLong(foodId))
+            .orElseThrow(() -> new RuntimeException("Menu item not found"));
+            System.out.println(menuItem1.getRestaurant().getId()!=menuItem.getRestaurant().getId());
+            if(menuItem1.getRestaurant().getId()!=menuItem.getRestaurant().getId())
+            redisTemplate.delete(key);
+        }
         redisTemplate.opsForHash().increment(key, foodId, 1L);
         redisTemplate.expire(key, 1, TimeUnit.HOURS);
         return getCart(userId);

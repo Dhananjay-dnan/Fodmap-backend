@@ -56,8 +56,8 @@ public class User {
     private List<Location> location;
 
 
-    // @OneToMany(mappedBy = "ownerId", cascade = CascadeType.ALL, orphanRemoval = true)
-    // private Set<Restaurant> restaurantsOwned;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+     private Set<Restaurant> restaurantsOwned;
 
     // Additional fields can be added as needed
 }

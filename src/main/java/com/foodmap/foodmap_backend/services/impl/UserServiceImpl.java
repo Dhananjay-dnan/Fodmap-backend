@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("UserName must not be empty");
         if (user.getPassword() == null || user.getPassword().isEmpty())
             throw new IllegalArgumentException("UserName must not be empty");
-        User userToSave = new User(null, user.getUsername(), user.getPassword(), null, null, user.getEmail(), user.getRole(),null, user.getLocation());
+        User userToSave = new User(null, user.getUsername(), user.getPassword(), null, null, user.getEmail(), user.getRole(),null, user.getLocation(), null);
         return userRepository.save(userToSave);
     }
 

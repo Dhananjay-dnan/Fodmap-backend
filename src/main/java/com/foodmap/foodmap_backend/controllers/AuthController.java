@@ -3,8 +3,8 @@ package com.foodmap.foodmap_backend.controllers;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,6 +46,39 @@ public class AuthController {
         loginRequest.getPassword()
     );
     User user = userService.getUserByName(loginRequest.getUserName()).orElseThrow();
+    if (user.getRole() != Role.CUSTOMER) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(false, "Access denied!", null, null, null));
+    }
+    String tokenValue = authenticationService.generateToken(userDetails);
+    ApiResponse apiResponse = ApiResponse.builder()
+    .success(true)
+    .message("Successful Login")
+    .token(tokenValue)
+    .expiresIn(86400L)
+    .Id(user.getId())
+    .build();
+
+     ResponseCookie cookie = ResponseCookie.from("jwt", tokenValue)
+        .httpOnly(true)
+        .secure(false) // Set to true in production (requires HTTPS)
+        .maxAge(86400) // Token expiration time in seconds
+        .path("/")
+        .sameSite("Lax") // Can be "Lax", "Strict", or "None"
+        .build();
+
+    return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(apiResponse);
+ }
+
+ @PostMapping(path = "/owner")
+ public ResponseEntity<ApiResponse> RestaurantLogin(@RequestBody LoginRequest loginRequest) {
+    UserDetails userDetails = authenticationService.authenticate(
+        loginRequest.getUserName(),
+        loginRequest.getPassword()
+    );
+    User user = userService.getUserByName(loginRequest.getUserName()).orElseThrow();
+    if (user.getRole() != Role.RESTAURANT_OWNER) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ApiResponse(false, "Access denied!", null, null, null));
+    }
     String tokenValue = authenticationService.generateToken(userDetails);
     ApiResponse apiResponse = ApiResponse.builder()
     .success(true)
@@ -84,6 +117,26 @@ public class AuthController {
         userService.creatUser(user);
 
         return ResponseEntity.ok(new ApiResponse(true, "User registered successfully", null, null, user.getId()));
+    }
+
+    @PostMapping("/signup/owner")
+    public ResponseEntity<?> registerRestaurantOwner(@RequestBody SignupRequest signUpRequest) {
+        if (userService.getUserByEmail(signUpRequest.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, "Email is already in use!",null,null, null));
+        }
+
+        // In production, encode the password!
+        User user = new User();
+        user.setUsername(signUpRequest.getUserName());
+        user.setEmail(signUpRequest.getEmail());
+        System.out.println(user.getEmail());
+        String encodedPassword = passwordEncoder.encode(signUpRequest.getPassword());
+        user.setPassword(encodedPassword);
+        user.setRole(Role.RESTAURANT_OWNER);
+
+        userService.creatUser(user);
+
+        return ResponseEntity.ok(new ApiResponse(true, "Business Registered successfully", null, null, user.getId()));
     }
 
     @PostMapping("/logout")
