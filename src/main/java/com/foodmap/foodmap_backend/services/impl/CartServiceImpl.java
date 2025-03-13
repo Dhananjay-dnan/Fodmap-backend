@@ -137,7 +137,7 @@ public class CartServiceImpl implements CartService{
         .map(keyCart -> Long.parseLong((String) keyCart))
         .findFirst()
         .orElse(null);
-        System.out.println("iohohhhhhhjhbhguyfvgtyhvtdrxersdfgvbhnjmkhygtfrdeswasedrftgyhujkjhgftrd--------"+fID);
+        
         if(fID!=null){
         FoodList menuItem = foodListRepository.findById(fID)
             .orElseThrow(() -> new RuntimeException("Menu item not found"));
@@ -159,6 +159,13 @@ public class CartServiceImpl implements CartService{
         if (newQuantity <= 0) {
             redisTemplate.opsForHash().delete(key, foodId); // Remove if quantity reaches 0 or below
         }
+        return getCart(userId);
+    }
+
+    @Override
+    public Map<String, String> clearFromCart(String userId) {
+        String key = "cart:" + userId;
+        redisTemplate.delete(key);
         return getCart(userId);
     }
     

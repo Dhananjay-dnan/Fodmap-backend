@@ -70,4 +70,11 @@ public class CartController {
                 Map<String, String> cart = cartService.removeFromCart(userId, foodListId);
         return ResponseEntity.ok(cart);
     }
+
+    @PostMapping(path="/{userId}/clear")
+    public ResponseEntity<Map<String, String>> clearFromCart(@PathVariable String userId)
+    {
+        Map<String, String> cart = cartService.clearFromCart(userId);
+        return ResponseEntity.ok(cart);
+    }
 }

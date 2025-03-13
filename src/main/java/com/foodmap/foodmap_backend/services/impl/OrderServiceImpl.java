@@ -29,7 +29,7 @@ public class OrderServiceImpl implements OrderService{
 
     @Override
     public Order createOrder(Order order) {
-        order.setOrderStatus(OrderStatus.CREATED);
+        order.setOrderStatus(order.getOrderStatus());
         order.setOrderTime(LocalDateTime.now());
        BigDecimal totalAmount = BigDecimal.ZERO;
 

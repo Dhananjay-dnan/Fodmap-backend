@@ -1,8 +1,40 @@
 services:
+  backend:
+    build: .  # Requires a Dockerfile in your backend directory
+    container_name: backend
+    ports:
+      - "8000:8000"  # Adjust to your backend port
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=changemeinprod!
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
   db:
+    container_name: db
     image: postgres:latest
     ports:
      - "5432:5432"
     restart: always
     environment:
       POSTGRES_PASSWORD: changemeinprod!
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+volumes:
+  pgdata:

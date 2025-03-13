@@ -16,4 +16,5 @@ public interface CartService {
     Map<String, String> getCart(String userId);
     Map<String, String> addToCart(String userId, String foodId);
     Map<String, String> removeFromCart(String userId, String foodId);
+    Map<String, String> clearFromCart(String userId);
 } 
